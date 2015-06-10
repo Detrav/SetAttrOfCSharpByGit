@@ -12,66 +12,14 @@ namespace SetAttrOfCSharpByGit
     {
         static void Main(string[] args)
         {
-            if(args.Length>0)
+            if (args.Length == 3)
             {
-                switch(args[0])
-                {
-                    case "JustCommitCount":
-                        if (args.Length > 2)
-                        {
-                            if (justCommitCount(args[1], args[2]))
-                                return;
-                        }
-                        break;
-                    case "Backup":
-                        if (args.Length > 1)
-                            if (backup(args[1]))
-                                return;
-                        break;
-                    case "ByTagName":
-                        if (args.Length > 3)
-                            if (byTagName(args[1], args[2],args[3]))
-                                return;
-                        break;
-                }
+                byTagName(args[0], args[1], args[2]);
             }
-            Console.WriteLine("SetAttrOfCSharpByGit - Полуавтоматическое назначение версий");
-            Console.WriteLine("SetAttrOfCSharpByGit JustCommitCount {Working Dir} {File Path} - Замена подстроки в файле на количество коммитов");
-            Console.WriteLine("SetAttrOfCSharpByGit Backup {File Path} - Востановление файла после компиляции");
-            Console.WriteLine("SetAttrOfCSharpByGit ByTagName {Working Dir} {Result File} {File Patch} - Замена результрующего файла на патч файл и на текущую версию в теге.");
-            Console.WriteLine(@"Подробная инструкция: https://github.com/Detrav");
-        }
-
-        private static bool justCommitCount(string p1, string p2)
-        {
-            int version = 0;
-            #region getVersion
-            Process p = new Process();
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.WorkingDirectory = p1;
-            p.StartInfo.FileName = "git";
-            p.StartInfo.Arguments = "rev-list HEAD --count";
-            p.Start();
-            string output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
-            //Console.WriteLine(output);
-            version = Int32.Parse(output);
-            #endregion getVersion
-            #region createAssembleInfo
-            if (!File.Exists(p1)) return false;
-            File.Move(p2, p2 + ".backup");
-            using (TextReader tr = new StreamReader(p2 + ".backup"))
+            if (args.Length == 1)
             {
-                string text = tr.ReadToEnd();
-                text = text.Replace("{GitCommitsCount}", version.ToString());
-                using (TextWriter tw = new StreamWriter(p2))
-                {
-                    tw.Write(text);
-                }
+                backup(args[0]);
             }
-            #endregion createAssembleInfo
-            return true;
         }
 
         static public bool backup(string p1)
@@ -82,7 +30,9 @@ namespace SetAttrOfCSharpByGit
             return true;
         }
 
-        static public bool byTagName(string p1,string p2,string p3)
+        static char[] digits = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', };
+
+        static public bool byTagName(string p1, string p2, string p3)
         {
             #region getVersion
             Process p = new Process();
@@ -94,12 +44,71 @@ namespace SetAttrOfCSharpByGit
             p.Start();
             string output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
-            Console.WriteLine(p.ExitCode);
-            Console.WriteLine(output);
+            if (p.ExitCode != 0) return false;
             //version = Int32.Parse(output);
+
+            string[] vers = output.Split('.');
+            if (vers.Length < 3) return false;
+            int magor = getEndIntFromString(vers[0]);
+            int minor = getIntFromString(vers[1]);
+            int build = getStartIntFromString(vers[2]);
+            #region Revison
+            p.StartInfo.Arguments = "rev-list HEAD --count";
+            p.Start();
+            output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+            int revision = Int32.Parse(output);
+            #endregion Revision
+            string version = string.Format("{0}.{1}.{2}.{3}", magor, minor, build, revision);
             #endregion getVersion
+            if (!File.Exists(p2)) return false;
+            if (!File.Exists(p3)) return false;
+            if (!File.Exists(p2 + ".backup"))
+                File.Move(p2, p2 + ".backup");
+            else
+                File.Delete(p2);
+            using (TextReader tr = new StreamReader(p2))
+            {
+                string text = tr.ReadToEnd();
+                text = text.Replace("{GitTagVersion}", version.ToString());
+                using (TextWriter tw = new StreamWriter(p2))
+                {
+                    tw.Write(text);
+                }
+            }
             return true;
         }
 
+        static public int getEndIntFromString(string str)
+        {
+            int i = str.Length;
+            do
+            {
+                i--;
+            } while (digits.Contains(str[i]) && i >= 0);
+            if (Int32.TryParse(str.Substring(i + 1), out i))
+                return i;
+            return 0;
+        }
+
+        static public int getStartIntFromString(string str)
+        {
+            int i = -1;// 10-rc // 10
+            do
+            {
+                i++;
+            } while (digits.Contains(str[i]) && i < str.Length);
+            if (Int32.TryParse(str.Substring(0, i), out i))
+                return i;
+            return 0;
+        }
+
+        static public int getIntFromString(string str)
+        {
+            int i = 0;
+            if (Int32.TryParse(str, out i))
+                return i;
+            return 0;
+        }
     }
 }
