@@ -12,7 +12,18 @@ namespace SetAttrOfCSharpByGit
     {
         static void Main(string[] args)
         {
-
+            if(args.Length>0)
+            {
+                switch(args[0])
+                {
+                    case "JustCommitCount":
+                        return;
+                    case "Backup":
+                        break;
+                    case "ByTagName":
+                        break;
+                }
+            }
             //Command (start {GitDir} {FilePath})
             //Command (stop {FilePath})
             default_main(args);
