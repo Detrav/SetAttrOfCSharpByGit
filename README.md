@@ -9,17 +9,17 @@
         [assembly: AssemblyVersion("0.0.0.0")]
         [assembly: AssemblyFileVersion("0.0.0.0")]
 
-На
+4.  На
 
         [assembly: AssemblyVersion("{GitTagVersion}")]
         [assembly: AssemblyFileVersion("{GitTagVersion}")]
 
-4.  Добавляем событие перед сборкой:
+5.  Добавляем событие перед сборкой:
 
         "$(SolutionDir)SetAttrOfCSharpByGit.exe" "$(SolutionDir)\" "$(ProjectDir)Properties\AssemblyInfo.cs" "$(ProjectDir)Properties\AssemblyInfo.git.cs"
 
-5.  Добавляем событие после сборки:
+6.  Добавляем событие после сборки:
 
         "$(SolutionDir)SetAttrOfCSharpByGit.exe" "$(ProjectDir)Properties\AssemblyInfo.cs"
         
-6.  Выполнять событие после собрки: всегда
+7.  Выполнять событие после собрки: всегда
