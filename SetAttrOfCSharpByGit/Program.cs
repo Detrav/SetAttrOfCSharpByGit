@@ -95,7 +95,7 @@ namespace SetAttrOfCSharpByGit
             string output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
             Console.WriteLine(p.ExitCode);
-            //Console.WriteLine(output);
+            Console.WriteLine(output);
             //version = Int32.Parse(output);
             #endregion getVersion
             return true;
