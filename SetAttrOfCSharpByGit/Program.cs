@@ -17,63 +17,88 @@ namespace SetAttrOfCSharpByGit
                 switch(args[0])
                 {
                     case "JustCommitCount":
-                        return;
+                        if (args.Length > 2)
+                        {
+                            if (justCommitCount(args[1], args[2]))
+                                return;
+                        }
+                        break;
                     case "Backup":
+                        if (args.Length > 1)
+                            if (backup(args[1]))
+                                return;
                         break;
                     case "ByTagName":
+                        if (args.Length > 3)
+                            if (byTagName(args[1], args[2],args[3]))
+                                return;
                         break;
                 }
             }
-            //Command (start {GitDir} {FilePath})
-            //Command (stop {FilePath})
-            default_main(args);
+            Console.WriteLine("SetAttrOfCSharpByGit - Полуавтоматическое назначение версий");
+            Console.WriteLine("SetAttrOfCSharpByGit JustCommitCount {Working Dir} {File Path} - Замена подстроки в файле на количество коммитов");
+            Console.WriteLine("SetAttrOfCSharpByGit Backup {File Path} - Востановление файла после компиляции");
+            Console.WriteLine("SetAttrOfCSharpByGit ByTagName {Working Dir} {Result File} {File Patch} - Замена результрующего файла на патч файл и на текущую версию в теге.");
+            Console.WriteLine(@"Подробная инструкция: https://github.com/Detrav");
         }
 
-        //Command (start {GitDir} {FilePath})
-        //Command (stop {FilePath})
-        static public void default_main(string[] args)
+        private static bool justCommitCount(string p1, string p2)
         {
-            if (args.Length < 2)
-                return;
-            switch (args[0])
+            int version = 0;
+            #region getVersion
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.WorkingDirectory = p1;
+            p.StartInfo.FileName = "git";
+            p.StartInfo.Arguments = "rev-list HEAD --count";
+            p.Start();
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+            //Console.WriteLine(output);
+            version = Int32.Parse(output);
+            #endregion getVersion
+            #region createAssembleInfo
+            if (!File.Exists(p1)) return false;
+            File.Move(p2, p2 + ".backup");
+            using (TextReader tr = new StreamReader(p2 + ".backup"))
             {
-                case "start":
-                    if (args.Length < 3)
-                        return;
-                    int version = 0;
-                    #region getVersion
-                    Process p = new Process();
-                    p.StartInfo.UseShellExecute = false;
-                    p.StartInfo.RedirectStandardOutput = true;
-                    p.StartInfo.WorkingDirectory = args[1];
-                    p.StartInfo.FileName = "git";
-                    p.StartInfo.Arguments = "rev-list HEAD --count";
-                    p.Start();
-                    string output = p.StandardOutput.ReadToEnd();
-                    p.WaitForExit();
-                    //Console.WriteLine(output);
-                    version = Int32.Parse(output);
-                    #endregion getVersion
-                    #region createAssembleInfo
-                    if (!File.Exists(args[2])) return;
-                    File.Move(args[2], args[2] + ".backup");
-                    using (TextReader tr = new StreamReader(args[2] + ".backup"))
-                    {
-                        string text = tr.ReadToEnd();
-                        text = text.Replace("{GitCommitsCount}", version.ToString());
-                        using (TextWriter tw = new StreamWriter(args[2]))
-                        {
-                            tw.Write(text);
-                        }
-                    }
-                    #endregion createAssembleInfo
-                    break;
-                case "end":
-                    if (!File.Exists(args[1] + ".backup")) return;
-                    if (File.Exists(args[1])) File.Delete(args[1]);
-                    File.Move(args[1] + ".backup", args[1]);
-                    break;
+                string text = tr.ReadToEnd();
+                text = text.Replace("{GitCommitsCount}", version.ToString());
+                using (TextWriter tw = new StreamWriter(p2))
+                {
+                    tw.Write(text);
+                }
             }
+            #endregion createAssembleInfo
+            return true;
+        }
+
+        static public bool backup(string p1)
+        {
+            if (!File.Exists(p1 + ".backup")) return false;
+            if (File.Exists(p1)) File.Delete(p1);
+            File.Move(p1 + ".backup", p1);
+            return true;
+        }
+
+        static public bool byTagName(string p1,string p2,string p3)
+        {
+            #region getVersion
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.WorkingDirectory = p1;
+            p.StartInfo.FileName = "git";
+            p.StartInfo.Arguments = "describe --tags --exact-match";
+            p.Start();
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+            Console.WriteLine(p.ExitCode);
+            //Console.WriteLine(output);
+            //version = Int32.Parse(output);
+            #endregion getVersion
+            return true;
         }
 
     }
