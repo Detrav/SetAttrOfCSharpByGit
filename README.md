@@ -16,10 +16,10 @@
 
 5.  Добавляем событие перед сборкой:
 
-        "$(SolutionDir)SetAttrOfCSharpByGit.exe" "$(SolutionDir)\" "$(ProjectDir)Properties\AssemblyInfo.cs" "$(ProjectDir)Properties\AssemblyInfo.git.cs"
+        if $(ConfigurationName) == Release "$(SolutionDir)SetAttrOfCSharpByGit.exe" "$(SolutionDir)\" "$(ProjectDir)Properties\AssemblyInfo.cs" "$(ProjectDir)Properties\AssemblyInfo.git.cs"
 
 6.  Добавляем событие после сборки:
 
-        "$(SolutionDir)SetAttrOfCSharpByGit.exe" "$(ProjectDir)Properties\AssemblyInfo.cs"
+        if $(ConfigurationName) == Release "$(SolutionDir)SetAttrOfCSharpByGit.exe" "$(ProjectDir)Properties\AssemblyInfo.cs"
         
 7.  Выполнять событие после собрки: всегда
