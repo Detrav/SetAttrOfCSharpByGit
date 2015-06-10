@@ -67,7 +67,7 @@ namespace SetAttrOfCSharpByGit
                 File.Move(p2, p2 + ".backup");
             else
                 File.Delete(p2);
-            using (TextReader tr = new StreamReader(p2))
+            using (TextReader tr = new StreamReader(p3))
             {
                 string text = tr.ReadToEnd();
                 text = text.Replace("{GitTagVersion}", version.ToString());
