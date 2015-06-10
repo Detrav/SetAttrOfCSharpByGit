@@ -23,3 +23,10 @@
         if $(ConfigurationName) == Release "$(SolutionDir)SetAttrOfCSharpByGit.exe" "$(ProjectDir)Properties\AssemblyInfo.cs"
         
 7.  Выполнять событие после собрки: всегда
+8.  Добавление новой версии
+        git pull
+        git push
+        git tag v1.2.3-tra-ta-ta
+        git push --tags
+        git checkout v1.2.3-tra-ta-ta
+        git checkout master
