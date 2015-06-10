@@ -12,13 +12,23 @@ namespace SetAttrOfCSharpByGit
     {
         static void Main(string[] args)
         {
+
+            //Command (start {GitDir} {FilePath})
+            //Command (stop {FilePath})
+            default_main(args);
+        }
+
+        //Command (start {GitDir} {FilePath})
+        //Command (stop {FilePath})
+        static public void default_main(string[] args)
+        {
             if (args.Length < 2)
                 return;
             switch (args[0])
             {
                 case "start":
                     if (args.Length < 3)
-                    return;
+                        return;
                     int version = 0;
                     #region getVersion
                     Process p = new Process();
@@ -40,7 +50,7 @@ namespace SetAttrOfCSharpByGit
                     {
                         string text = tr.ReadToEnd();
                         text = text.Replace("{GitCommitsCount}", version.ToString());
-                        using(TextWriter tw = new StreamWriter(args[2]))
+                        using (TextWriter tw = new StreamWriter(args[2]))
                         {
                             tw.Write(text);
                         }
@@ -54,5 +64,6 @@ namespace SetAttrOfCSharpByGit
                     break;
             }
         }
+
     }
 }
